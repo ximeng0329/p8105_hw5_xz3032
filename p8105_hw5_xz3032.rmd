@@ -13,7 +13,7 @@ Read in the data
 
 ```{r}
 homicide_df = 
-  read_csv("./data/homicide-data.csv") %>%
+  read_csv("./homicide_data/homicide-data.csv") %>%
   mutate(
     city_state = str_c(city, state, sep = "_"),
     resolved = case_when(
@@ -67,5 +67,40 @@ results_df %>%
 ```
 
 ## Problem 2
+
+```{r}
+data_1 = read_csv("./lda_data/con_01.csv")
+```
+
+```{r}
+path_df = 
+  tibble(
+  path = list.files("lda_data")
+  ) %>%
+  mutate(path = str_c("lda_data/", path),
+         data = map(.x = path, ~read_csv(.x))
+  ) %>%
+  mutate(
+    id = substr(path, 10, 15)
+  ) %>%
+  unnest(data) %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "value"
+  ) %>%
+  select(-path) %>%
+  mutate(
+    week = substr(week, 6, 6),
+    week = as.numeric(week)
+    )
+```
+
+## Make spaghetti plot showing observations on each subject over time
+```{r}
+path_df %>%
+  ggplot(aes(x = ))
+```
 
 
