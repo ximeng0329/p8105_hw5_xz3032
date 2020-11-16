@@ -100,7 +100,14 @@ path_df =
 ## Make spaghetti plot showing observations on each subject over time
 ```{r}
 path_df %>%
-  ggplot(aes(x = ))
+  group_by(id) %>%
+  ggplot(aes(x = week, y = value, color = id)) + geom_line(alpha = 0.8) + labs(title = "Observation on Each Subject Over Time") + theme_gray() 
 ```
+
+## Problem 3
+```{r}
+
+```
+
 
 
