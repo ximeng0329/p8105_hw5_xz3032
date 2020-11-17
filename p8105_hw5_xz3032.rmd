@@ -165,7 +165,7 @@ estimate = sim_diff_mu %>%
   )
 
 plot1 = estimate %>%
-  ggplot(aes(x = mu, y = estimate_mu, color = mu)) + geom_point() + geom_smooth()
+  ggplot(aes(x = mu, y = estimate_mu, color = mu)) + geom_point() + geom_smooth() + labs(x = "true mean", y = "estimated mean based on 5000 sample mean")
 ```
 
 Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis.
@@ -178,8 +178,8 @@ reject_estimate = sim_diff_mu %>%
   )
 
 plot2 = reject_estimate %>%
-  ggplot(aes(x = mu, y = reject_mean, color = mu)) + geom_point() + geom_smooth()
+  ggplot(aes(x = mu, y = reject_mean, color = mu)) + geom_point() + geom_smooth() + labs(x = "true mean", y = "estimated mean when H0 is rejected")
 
-plot1+plot2
+plot1 + plot2
 ```
 
