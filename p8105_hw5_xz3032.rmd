@@ -5,6 +5,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(patchwork)
 ```
 
 # Problem 1
@@ -150,13 +151,35 @@ power = sim_diff_mu %>%
   )
   
 power_plot = power %>%
-  ggplot(aes(x = mu, y = proportion, color = mu)) + geom_line
-  
+  ggplot(aes(x = mu, y = proportion, color = mu)) + geom_point() + geom_smooth()
+
+power_plot
 ```
 
 Make a plot showing the average estimate of mu on the y axis and the true value of mu on the x axis.
 ```{r}
+estimate = sim_diff_mu %>%
+  group_by(mu) %>%
+  summarize(
+    estimate_mu = mean(estimate)
+  )
 
+plot1 = estimate %>%
+  ggplot(aes(x = mu, y = estimate_mu, color = mu)) + geom_point() + geom_smooth()
 ```
 
+Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis.
+```{r}
+reject_estimate = sim_diff_mu %>%
+  filter(p.value < 0.05) %>%
+  group_by(mu) %>%
+  summarize(
+    reject_mean = mean(estimate)
+  )
+
+plot2 = reject_estimate %>%
+  ggplot(aes(x = mu, y = reject_mean, color = mu)) + geom_point() + geom_smooth()
+
+plot1+plot2
+```
 
