@@ -104,11 +104,11 @@ path_df %>%
   group_by(id) %>%
   ggplot(aes(x = week, y = value, color = id)) + geom_line(alpha = 0.8) + labs(title = "Observation on Each Subject Over Time") + theme_gray() 
 ```
-Comment:  
+Comment:  Control arm generally have lower value than experiment arm. The observation value for both control and experiment arm fluctuate over time but has a lightly increasing trend, especially for experiment arm.  
 
 ## Problem 3
 ```{r}
-ttest = function(mu) {
+ttest = function(mu) {         #write a function with input of mu and output of t test of a normal sample with n = 30, sd =5
   sample = tibble(x = rnorm(30, mean = mu, sd = 5))
   sample %>%
     t.test(mu = 0, alternative = "two.sided", conf.level = 0.95) %>%
@@ -116,24 +116,24 @@ ttest = function(mu) {
     select(estimate, p.value)
 }
 
-ttest(0)
+ttest(0)  # try the function with input of mu=0
 ```
 
 Iterate for 5000 times
 ```{r}
-sim_mu0 = rerun(5000, ttest(0)) %>%
+sim_mu0 = rerun(5000, ttest(0)) %>%  # iterate 5000 times for the function with input  mu=0
   bind_rows()
 ```
 
 Repeat the above for μ={1,2,3,4,5,6}
 ```{r}
 sim_diff_mu = 
-  tibble(mu = c(1, 2, 3, 4, 5, 6)) %>%
+  tibble(mu = c(1, 2, 3, 4, 5, 6)) %>%  # create a data frame with different mu and corresponding t test
   mutate(
-    t_output = map(.x = mu, ~rerun(5000,ttest(.x))),
-    mean_pvalue = map(t_output, bind_rows)
+    t_output = map(.x = mu, ~rerun(5000,ttest(.x))),    #rerun the test for different u each for 5000 times
+    mean_pvalue = map(t_output, bind_rows)  
   ) %>%
-  unnest(mean_pvalue) %>%
+  unnest(mean_pvalue) %>%      
   select(-t_output)
 ```
 
@@ -141,28 +141,29 @@ Make a plot showing the proportion of times the null was rejected
 ```{r}
 power = sim_diff_mu %>%
   mutate(
-     = case_when(p.value < 0.05 ~ "reject", p.value >= 0.05 ~ "accept")
-  ) %>%
-  group_by(mu) %>%
+    decision = case_when(p.value < 0.05 ~ "reject", p.value >= 0.05 ~ "accept")
+  ) %>%   #create another variable indicate the decision
+  group_by(mu) %>%  
   summarize(
-    total_reject = sum(decision == "reject")
+    total_reject = sum(decision == "reject")   #calculate total rejection # for each mu
   ) %>%
   mutate(
     proportion = total_reject/5000
   )
   
 power_plot = power %>%
-  ggplot(aes(x = mu, y = proportion, color = mu)) + geom_point() + geom_smooth()
+  ggplot(aes(x = mu, y = proportion, color = mu)) + geom_point() + geom_smooth() + labs(title = "proportion of times the null was rejected")
 
 power_plot
 ```
+Comment:As effect size increase, the proportion of times that null was rejected increases as well.  The association between effect size and power has a relationship similar to logarithim.  Power will approach 1 as effect size increase.  
 
 Make a plot showing the average estimate of mu on the y axis and the true value of mu on the x axis.
 ```{r}
 estimate = sim_diff_mu %>%
   group_by(mu) %>%
   summarize(
-    estimate_mu = mean(estimate)
+    estimate_mu = mean(estimate)  #calculating each average mu generated from 5000 samples 
   )
 
 plot1 = estimate %>%
@@ -172,10 +173,10 @@ plot1 = estimate %>%
 Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis.
 ```{r}
 reject_estimate = sim_diff_mu %>%
-  filter(p.value < 0.05) %>%
+  filter(p.value < 0.05) %>%  #only left with mu that rejected null hypothesis
   group_by(mu) %>%
   summarize(
-    reject_mean = mean(estimate)
+    reject_mean = mean(estimate) 
   )
 
 plot2 = reject_estimate %>%
@@ -183,4 +184,4 @@ plot2 = reject_estimate %>%
 
 plot1 + plot2
 ```
-
+Comment: Sample average mean across tests when the null is rejected is NOT equal to the true mean, but the relationship can shift based on the value of true mean.  when the sample estimates mean is close to the null hypothesis value(mu = 0), for example when generating sample using mu = 1, it is harder to reject the null when the standard deviation is 5.  It requires a larger sample mu which deviate further from the null in order to reject H0.  However, when mu=6 when generating sample , it is very easy to reject H0, and in this case, the true mean the estimated mean used to reject H0 will be almost equal.  
