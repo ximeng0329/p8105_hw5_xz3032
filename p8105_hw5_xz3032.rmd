@@ -82,18 +82,18 @@ path_df =
          data = map(.x = path, ~read_csv(.x))
   ) %>%
   mutate(
-    id = substr(path, 10, 15)
+    id = substr(path, 10, 15)  # substring "path" variable and only left with arm and subject id
   ) %>%
   unnest(data) %>%
   janitor::clean_names() %>%
-  pivot_longer(
+  pivot_longer(           # tidy the data by combining week variables
     week_1:week_8,
     names_to = "week",
     values_to = "value"
   ) %>%
   select(-path) %>%
   mutate(
-    week = substr(week, 6, 6),
+    week = substr(week, 6, 6),   #substring the week variable to only numbers and convert to numeric type
     week = as.numeric(week)
     )
 ```
@@ -104,6 +104,7 @@ path_df %>%
   group_by(id) %>%
   ggplot(aes(x = week, y = value, color = id)) + geom_line(alpha = 0.8) + labs(title = "Observation on Each Subject Over Time") + theme_gray() 
 ```
+Comment:  
 
 ## Problem 3
 ```{r}
@@ -140,7 +141,7 @@ Make a plot showing the proportion of times the null was rejected
 ```{r}
 power = sim_diff_mu %>%
   mutate(
-    decision = case_when(p.value < 0.05 ~ "reject", p.value >= 0.05 ~ "accept")
+     = case_when(p.value < 0.05 ~ "reject", p.value >= 0.05 ~ "accept")
   ) %>%
   group_by(mu) %>%
   summarize(
